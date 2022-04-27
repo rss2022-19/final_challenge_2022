@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def find_goal_point(rgb_img, display=False):
+def find_goal_point(rgb_img, display=False, ret_image=True):
     """
     returns: (u, v) pixel point for goal to follow 
     """
@@ -74,5 +74,7 @@ def find_goal_point(rgb_img, display=False):
     if display==True:
         plt.imshow(rbg_img_copy)
         plt.show()
+    if ret_image==True:
+        return (avgx, avgy), rbg_img_copy
     
     return (avgx, avgy)

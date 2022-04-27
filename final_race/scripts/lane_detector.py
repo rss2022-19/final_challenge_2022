@@ -40,35 +40,6 @@ class LaneDetector():
 
         goal = find_goal_point(image, display=False)
 
-        # # create a zero array
-        # stencil = np.zeros_like(image[:,:,0])
-        # # specify coordinates of the polygon
-        # #polygon = np.array([[-150,376], [280,160], [400,160], [1100,376]])
-        # polygon = np.array([[0,376], [0,150], [672,150], [672,376]])
-        # # fill polygon with ones
-        # cv2.fillConvexPoly(stencil, polygon, 1)
-
-        # # apply polygon as a mask on the frame
-        # img = cv2.bitwise_and(image[:,:,0], image[:,:,0], mask=stencil)
-
-        # # apply image thresholding
-        # ret, thresh = cv2.threshold(img, 165, 200, cv2.THRESH_BINARY)
-
-        # lines = cv2.HoughLinesP(thresh, 1, np.pi/180, 60, maxLineGap=200)
-        # lines_filtered = []
-        # # create a copy of the original frame
-        # dmy = image[:,:,0].copy()
-
-        # # draw Hough lines
-        # for line in lines:
-        #     x1, y1, x2, y2 = line[0]
-        
-        #     m = (y2 - y1) / (x2 - x1)
-        #     if (abs(m) > 0.3):
-        #         lines_filtered.append(line)
-        #         cv2.line(dmy, (x1, y1), (x2, y2), (0, 0, 0), 3)
-        # goal = self.find_goal(lines_filtered)
-
         goal_pixel = GoalPixel()
         goal_pixel.u = goal[0]
         goal_pixel.v = goal[1]
