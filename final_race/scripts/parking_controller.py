@@ -22,7 +22,7 @@ class ParkingController():
         # self.error_pub = rospy.Publisher("/parking_error",ParkingError, queue_size=10)
 
         self.parking_distance = rospy.get_param("parking_distance", 0.75) # meters; try playing with this number!
-        self.max_velocity = rospy.get_param("max_velocity", 0.5)
+        self.max_velocity = rospy.get_param("max_velocity", 0.25)
         self.max_steering_angle = 0.34
         self.relative_x = 0
         self.relative_y = 0
@@ -82,9 +82,9 @@ class ParkingController():
             self.reverse_mode = True
         
         # #Print for debugging
-        # print("angle", abs(relative_angle))
-        # print("distance", abs(self.distance_error))
-        # print("reverse mode", self.reverse_mode)
+        #print("angle", abs(relative_angle))
+        #print("distance", abs(self.distance_error))
+        #print("reverse mode", self.reverse_mode)
         
         #When not reversing, run regular drive code
         if not self.reverse_mode:
@@ -116,7 +116,7 @@ class ParkingController():
             else:
                 self.reverse_mode = False
         #Send error values   
-        self.error_publisher()
+        #self.error_publisher()
         #Send drive values
         self.drive_command()
         

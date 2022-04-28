@@ -24,6 +24,8 @@ class LaneDetector():
     Publishes to: /relative_cone_px (ConeLocationPixel) : the coordinates of the goal point in the image frame (units are pixels).
     """
     def __init__(self):
+        print("HERE")
+
         # Pubish pixel information 
         self.goal_pub = rospy.Publisher("/relative_cone_px", GoalPixel, queue_size=10)
         self.debug_pub = rospy.Publisher("/cone_debug_img", Image, queue_size=10)
@@ -38,14 +40,15 @@ class LaneDetector():
         print("MAKES IT HERE")
         image = self.bridge.imgmsg_to_cv2(image_msg, "bgr8")
 
-        goal = find_goal_point(image, display=False)
-
+        goal, debug_img = find_goal_point(image, display=False, ret_image=True)
+        print("goal:", goal)
         goal_pixel = GoalPixel()
-        goal_pixel.u = goal[0]
-        goal_pixel.v = goal[1]
+        goal_pixel.u = float(goal[0])
+        goal_pixel.v = float(goal[1])
         self.goal_pub.publish(goal_pixel)
 
-        debug_msg = self.bridge.cv2_to_imgmsg(image, "bgr8")
+        debug_img = cv2.cvtColor(debug_img, cv2.COLOR_RGB2BGR)
+        debug_msg = self.bridge.cv2_to_imgmsg(debug_img, "bgr8")
         self.debug_pub.publish(debug_msg)
 
 if __name__ == '__main__':
