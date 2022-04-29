@@ -25,10 +25,10 @@ from visual_servoing.msg import ConeLocation, ConeLocationPixel
 #                    [408.0, 274.0],
 #                    [459.0, 223.0]] # dummy points
 
-PTS_IMAGE_PLANE = [[0.0, 0.0],
-                   [0.0, 0.0],
-                   [0.0, 0.0],
-                   [0.0, 0.0]] # dummy points
+PTS_IMAGE_PLANE = [[173.0, 208.0],
+                   [246.0, 186.0],
+                   [371.0, 246.0],
+                   [430.0, 202.0]] # dummy points
 
 ######################################################
 
@@ -42,10 +42,10 @@ PTS_IMAGE_PLANE = [[0.0, 0.0],
 #                     [.54/.0254, -.04/.0254],
 #                     [1/.0254, -.26/.0254]] # dummy points
 
-PTS_GROUND_PLANE = [[0.0, 0.0],
-                    [0.0, 0.0],
-                    [0.0, 0.0],
-                    [0.0, 0.0]] # dummy points                    
+PTS_GROUND_PLANE = [[48.0, 25.0],
+                    [69.5, 21.0],
+                    [28.5, 0],
+                    [50.5, -11.0]] # dummy points
 ######################################################
 
 METERS_PER_INCH = 0.0254
@@ -53,11 +53,11 @@ METERS_PER_INCH = 0.0254
 
 class HomographyTransformer:
     def __init__(self):
-        #self.cone_px_sub = rospy.Subscriber("/relative_cone_px", ConeLocationPixel, self.cone_detection_callback)
-        #self.cone_pub = rospy.Publisher("/relative_cone", ConeLocation, queue_size=10)
+        self.cone_px_sub = rospy.Subscriber("/relative_cone_px", ConeLocationPixel, self.cone_detection_callback)
+        self.cone_pub = rospy.Publisher("/relative_cone", ConeLocation, queue_size=10)
 
-        #self.marker_pub = rospy.Publisher("/cone_marker",
-        #    Marker, queue_size=1)
+        self.marker_pub = rospy.Publisher("/cone_marker",
+            Marker, queue_size=1)
 
         if not len(PTS_GROUND_PLANE) == len(PTS_IMAGE_PLANE):
             rospy.logerr("ERROR: PTS_GROUND_PLANE and PTS_IMAGE_PLANE should be of same length")
@@ -74,20 +74,20 @@ class HomographyTransformer:
 
         self.h, err = cv2.findHomography(np_pts_image, np_pts_ground)
 
-    # def cone_detection_callback(self, msg):
-    #     #Extract information from message
-    #     u = msg.u
-    #     v = msg.v
+    def cone_detection_callback(self, msg):
+        #Extract information from message
+        u = msg.u
+        v = msg.v
 
-    #     #Call to main function
-    #     x, y = self.transformUvToXy(u, v)
+        #Call to main function
+        x, y = self.transformUvToXy(u, v)
 
-    #     #Publish relative xy position of object in real world
-    #     relative_xy_msg = ConeLocation()
-    #     relative_xy_msg.x_pos = x
-    #     relative_xy_msg.y_pos = y
+        #Publish relative xy position of object in real world
+        relative_xy_msg = ConeLocation()
+        relative_xy_msg.x_pos = x
+        relative_xy_msg.y_pos = y
 
-    #     self.cone_pub.publish(relative_xy_msg)
+        self.cone_pub.publish(relative_xy_msg)
 
 
     def transformUvToXy(self, u, v):
@@ -95,12 +95,10 @@ class HomographyTransformer:
         u and v are pixel coordinates.
         The top left pixel is the origin, u axis increases to right, and v axis
         increases down.
-
         Returns a normal non-np 1x2 matrix of xy displacement vector from the
         camera to the point on the ground plane.
         Camera points along positive x axis and y axis increases to the left of
         the camera.
-
         Units are in meters.
         """
         homogeneous_point = np.array([[u], [v], [1]])
@@ -111,7 +109,7 @@ class HomographyTransformer:
         y = homogeneous_xy[1, 0]
         return x, y
 
-    def draw_marker(self, x, y, message_frame, color=[1.0, 0.0, 0.0]):
+    def draw_marker(self, cone_x, cone_y, message_frame):
         """
         Publish a marker to represent the cone in rviz.
         (Call this function if you want)
@@ -124,9 +122,7 @@ class HomographyTransformer:
         marker.scale.y = .2
         marker.scale.z = .2
         marker.color.a = 1.0
-        marker.color.r = color[0]
-        marker.color.g = color[1]
-        marker.color.b = color[2]
+        marker.color.r = 1.0
         marker.color.g = .5
         marker.pose.orientation.w = 1.0
         marker.pose.position.x = cone_x
@@ -135,6 +131,6 @@ class HomographyTransformer:
 
 
 if __name__ == "__main__":
-    rospy.init_node('homography')
+    rospy.init_node('homography_transformer')
     homography_transformer = HomographyTransformer()
     rospy.spin()

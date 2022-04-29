@@ -44,9 +44,11 @@ class InterruptNode:
                 with self.mode_lock:
                     self.mode = "carwash"
         elif mode == "carwash":
-            drive = AckermannDriveStamped()
+            drive_command = AckermannDriveStamped()
             # TODO Do the drive do (in a straight line)
-            self.drive.publish(drive)
+            drive_command.drive.steering_angle = 0
+            drive_command.drive.speed = 1
+            self.drive_pub.publish(drive_command)
             if height < self.TRIGGER_HEIGHT: # No detect == empty rect
                 with self.mode_lock:
                     self.mode = "normal"
@@ -55,7 +57,6 @@ class InterruptNode:
     def lf_callback(self, drive):
         with self.mode_lock:
             mode = self.mode
-
         if mode == "normal":
             self.drive_pub.publish(drive) # Forward linefollower in normal mode
 

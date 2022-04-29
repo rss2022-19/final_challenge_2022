@@ -28,7 +28,7 @@ def image_print(img):
 	cv2.waitKey(0)
 	cv2.destroyAllWindows()
 
-def cd_color_segmentation(img, template=None, img_path=None):
+def cd_color_segmentation(img, light, dark, template=None, img_path=None):
 	"""
 	Implement the cone detection using color segmentation algorithm
 	Input:
@@ -72,8 +72,8 @@ def cd_color_segmentation(img, template=None, img_path=None):
 
 
 	## IMPLEMENTATION 2: without contours ##
-	light_orange = (175,238,238)
-	dark_orange = (0,118,182)
+	light_orange = light #(175,238,238)
+	dark_orange = dark #(0,118,182)
 
 	mask = cv2.inRange(img_hsv, light_orange, dark_orange)
 

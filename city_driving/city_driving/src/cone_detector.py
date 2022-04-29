@@ -7,14 +7,14 @@ import cv2
 from cv_bridge import CvBridge, CvBridgeError
 
 from sensor_msgs.msg import Image
-from geometry_msgs.msg import Point, Polygon, Point32
+from geometry_msgs.msg import Point #geometry_msgs not in CMake file
 from visual_servoing.msg import ConeLocationPixel
 
 # import your color segmentation algorithm; call this function in ros_image_callback!
-from color_segmentation import cd_color_segmentation
+from computer_vision.color_segmentation import cd_color_segmentation
 
 
-class CWDetector():
+class ConeDetector():
     """
     A class for applying your cone detection algorithms to the real robot.
     Subscribes to: /zed/zed_node/rgb/image_rect_color (Image) : the live RGB image from the onboard ZED camera.
@@ -25,7 +25,7 @@ class CWDetector():
         self.LineFollower = False
 
         # Subscribe to ZED camera RGB frames
-        self.cone_pub = rospy.Publisher("/car_wash_rect", Polygon, queue_size=10)
+        self.cone_pub = rospy.Publisher("/relative_cone_px", ConeLocationPixel, queue_size=10)
         self.debug_pub = rospy.Publisher("/cone_debug_img", Image, queue_size=10)
         self.image_sub = rospy.Subscriber("/zed/zed_node/rgb/image_rect_color", Image, self.image_callback)
         self.bridge = CvBridge() # Converts between ROS images and OpenCV Images
@@ -50,15 +50,12 @@ class CWDetector():
         image[290:,:,:] = 0
         bounding_box = cd_color_segmentation(image, (175,238,238), (0,118,182))
 
-        bb = [Point32(), Point32()]
-        bb[0].x = bounding_box[0][0]
-        bb[0].y = bounding_box[0][1]
-        bb[1].x = bounding_box[1][0]
-        bb[1].y = bounding_box[1][1]
-        c = Polygon(bb)
+        c = ConeLocationPixel()
+        c.u = (bounding_box[1][0]+bounding_box[0][0])/2
+        c.v = (bounding_box[1][1]+bounding_box[0][1])/2
 
         if not (bounding_box[0] == (0, 0) and bounding_box[1] == (0, 0)):
-            self.cone_pub.publish()
+            self.cone_pub.publish(c)
 
         debug_msg = self.bridge.cv2_to_imgmsg(image, "bgr8")
         self.debug_pub.publish(debug_msg)
@@ -66,8 +63,8 @@ class CWDetector():
 
 if __name__ == '__main__':
     try:
-        rospy.init_node('CWDetector', anonymous=True)
-        CWDetector()
+        rospy.init_node('ConeDetector', anonymous=True)
+        ConeDetector()
         rospy.spin()
     except rospy.ROSInterruptException:
         pass
