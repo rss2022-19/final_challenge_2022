@@ -22,8 +22,10 @@ class InterruptNode:
     TRIGGER_EPSILON = 5
 
     # (px) height of detected stop sign to enter stopsign mode
-    SS_TRIGGER_HEIGHT = 100
+    SS_TRIGGER_HEIGHT = 70
     # (px) DO WE NEED A STOPSIGN EPSILON?
+    # (sec) Amount of time to wait before detecting stop signs again
+    SS_TIME_EPSILON = 5
 
     def __init__(self):
         # self.wf_sub = rospy.Subscriber("/wf_drive", AckermannDriveStamped, self.wf_callback)
@@ -86,7 +88,11 @@ class InterruptNode:
         height = (bottomright - topleft)[1]  # in px
 
         if self.stop_sign_disabled:
-            return
+            now = rospy.get_time()
+            if now - self.last_stop_sign_check > self.SS_TIME_EPSILON:
+                self.stop_sign_disabled = False
+            else:
+                return
 
         with self.mode_lock:
             mode = self.mode
