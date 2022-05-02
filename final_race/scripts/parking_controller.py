@@ -21,8 +21,9 @@ class ParkingController():
         self.drive_pub = rospy.Publisher(DRIVE_TOPIC, AckermannDriveStamped, queue_size=10)
         # self.error_pub = rospy.Publisher("/parking_error",ParkingError, queue_size=10)
 
-        self.parking_distance = rospy.get_param("parking_distance", 0.75) # meters; try playing with this number!
-        self.max_velocity = rospy.get_param("max_velocity", 0.25)
+        self.parking_distance = rospy.get_param("parking_distance", 0.1) # meters; try playing with this number!
+        #self.max_velocity = rospy.get_param("max_velocity", 4.0)
+        self.max_velocity = 4.0
         self.max_steering_angle = 0.34
         self.relative_x = 0
         self.relative_y = 0
@@ -104,7 +105,10 @@ class ParkingController():
             velocity_out = (self.Kp_velocity * self.distance_error) + (self.Kd_velocity * D_velocity)
             
             #Cap velocity and send it out
+            print("velocity", velocity_out)
             self.drive_velocity = np.clip(velocity_out, -self.max_velocity, self.max_velocity)
+
+            print(self.drive_velocity)
             #Cap angle and send it out. If backing up, use negative of angle
             self.drive_angle = np.clip(angle_out, -self.max_steering_angle, self.max_steering_angle)*np.sign(self.drive_velocity)
         

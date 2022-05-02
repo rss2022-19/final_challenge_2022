@@ -23,7 +23,8 @@ def find_goal_point(rgb_img, display=False, ret_image=True):
     thresh, ret = cv2.threshold(cv2.cvtColor(cropped_rgb_img, cv2.COLOR_RGB2GRAY), 165, 200, cv2.THRESH_BINARY)
 
     ## HOUGH TRANSFORM TO GET LINES
-    lines = cv2.HoughLinesP(ret, 1, np.pi/180, 60, maxLineGap=200)
+    lines = cv2.HoughLinesP(ret, 1, np.pi/180, 35, maxLineGap=200)
+    #print("hough lines:", len(lines))
     lines_filtered = []
     
     pos_lines_info = []
@@ -33,8 +34,7 @@ def find_goal_point(rgb_img, display=False, ret_image=True):
     # draw Hough lines
     for line_idx, line in enumerate(lines):
       x1, y1, x2, y2 = line[0]
-      m = (y2-y1)/(x2-x1)
-        
+      m = float(y2-y1)/float(x2-x1)
       if (abs(m) > 0.25):
           lines_filtered.append(line)
           cv2.line(rbg_img_copy, (x1, y1), (x2, y2), COLOR_LINES, 3)
@@ -45,14 +45,30 @@ def find_goal_point(rgb_img, display=False, ret_image=True):
           else:
               neg_lines_info.append((m, b, line_idx))
             
-
+    #print("pos_lines_info:", len(pos_lines_info))
+    #print("neg_lines_info:", len(neg_lines_info))
     Y_TOP = 200
-    pos_lines_intersections = [(tup[2], (Y_TOP - tup[1])/tup[0])  for i, tup in enumerate(pos_lines_info)]
-    neg_lines_intersections = [(tup[2], (Y_TOP - tup[1])/tup[0])  for i, tup in enumerate(neg_lines_info)]
+
+    pos_lines_intersections = []
+    neg_lines_intersections = []
+
+    for i, tup in enumerate(pos_lines_info):
+        if (((Y_TOP - tup[1])/tup[0]) > (672*1.0/3.0)):
+            pos_lines_intersections.append((tup[2], (Y_TOP - tup[1])/tup[0]))
+
+    for i, tup in enumerate(neg_lines_info):
+        if (((Y_TOP - tup[1])/tup[0]) < (672*2.0/3.0)):
+            neg_lines_intersections.append((tup[2], (Y_TOP - tup[1])/tup[0]))
+
+    #pos_lines_intersections = [(tup[2], (Y_TOP - tup[1])/tup[0]) if (((Y_TOP - tup[1])/tup[0]) < (672/2))  for i, tup in enumerate(pos_lines_info)]
+    #neg_lines_intersections = [(tup[2], (Y_TOP - tup[1])/tup[0])  if (((Y_TOP - tup[1])/tup[0]) > (672/2)) for i, tup in enumerate(neg_lines_info)]
 
     pos_lines_intersections.sort(key=lambda x: x[1])
     neg_lines_intersections.sort(key=lambda x: x[1])
 
+    print("pos_lines_intersections:", len(pos_lines_intersections))
+    print("neg_lines_intersections:", len(neg_lines_intersections))
+    
     pos_line_ind = pos_lines_intersections[0][0]
     neg_line_ind = neg_lines_intersections[-1][0]
     pos_line = lines[pos_line_ind][0]
@@ -62,12 +78,12 @@ def find_goal_point(rgb_img, display=False, ret_image=True):
     cv2.line(rbg_img_copy, (neg_line[0], neg_line[1]), (neg_line[2], neg_line[3]), (0, 0, 0), 3)
 
     new_lines_filtered = [lines[pos_line_ind], lines[neg_line_ind]]
-
+    #new_lines_filtered = []
     y_lookahead = 200
     sumx = 0
     for line in new_lines_filtered:
         x1, y1, x2, y2 = line[0]
-        m = (y2-y1)/(x2-x1)
+        m = float(y2-y1)/float(x2-x1)
         b = y2-(m*x2)
         x_lookahead = (y_lookahead-b)/m
         sumx += x_lookahead
